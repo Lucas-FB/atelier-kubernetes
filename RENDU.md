@@ -73,8 +73,11 @@ site-7676b744b7-zdpgd   1/1     Running   0          97s     10.42.1.7   k3d-lab
 ## Bonus (facultatif)
 
 14. Bonus réalisés et remarques :
-    >
+    > - **Bonus A (Ingress) :** Configuration de l'Ingress `site` pour exposer l'application via Traefik sur le port `8081`. Contrairement au `port-forward`, l'accès reste continu sans coupure lors de la suppression de pods[cite: 1].
+    > - **Bonus B (Probes et ressources) :** Ajout d'une `readinessProbe` HTTP sur `/` (port `80`) et de `requests`/`limits` CPU et mémoire (`50m`/`100m` CPU, `32Mi`/`64Mi` RAM)[cite: 1]. Si la probe pointe vers un chemin inexistant (`/nope`), le pod reste `Running` mais passe à `0/1 Ready`, et Kubernetes le retire automatiquement des Endpoints du Service pour ne plus lui envoyer de trafic[cite: 1].
+    > - **Bonus C (Maintenance d'un nœud) :** Simulation avec `kubectl drain k3d-lab-agent-0` : le pod `site` présent sur ce nœud a été évincé et immédiatement recréé par le ReplicaSet sur `k3d-lab-agent-1`[cite: 1]. Après `kubectl uncordon`, les pods ne reviennent pas d'eux-mêmes sur `agent-0` car le scheduler ne déplace pas les pods sains déjà en cours d'exécution[cite: 1].
+    > - **Bonus D (Namespaces) :** Création du namespace `prod` et déploiement d'une seconde instance complète et isolée du site (`configmap`, `deployment`, `service`), vérifiée en ligne de commande et dans Portainer[cite: 1].
 
 ---
 
-**Score obtenu avec `./scripts/check.sh` :** ... / ...
+**Score obtenu avec `./scripts/check.sh` :** 18 / 18
