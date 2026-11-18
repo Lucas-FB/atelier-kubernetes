@@ -13,10 +13,10 @@
    >3 noeuds, un control plane (le master) et les deux workers
 2. Que montre `docker ps` ? Qu'est-ce qu'un « nœud » dans k3d, concrètement ?
    >CONTAINER ID   IMAGE                            COMMAND                  CREATED          STATUS          PORTS                                                              NAMES
-   7a6f245fdd9c   ghcr.io/k3d-io/k3d-proxy:5.9.0   "/bin/sh -c nginx-pr…"   31 minutes ago   Up 30 minutes   0.0.0.0:8081->80/tcp, [::]:8081->80/tcp, 0.0.0.0:33251->6443/tcp   k3d-lab-serverlb
-   f71c5080e240   rancher/k3s:v1.35.5-k3s1         "/bin/k3d-entrypoint…"   31 minutes ago   Up 30 minutes                                                                      k3d-lab-agent-1
-   a1da78d67c7b   rancher/k3s:v1.35.5-k3s1         "/bin/k3d-entrypoint…"   31 minutes ago   Up 30 minutes                                                                      k3d-lab-agent-0
-   f41a894896a6   rancher/k3s:v1.35.5-k3s1         "/bin/k3d-entrypoint…"   31 minutes ago   Up 31 minutes                                                                      k3d-lab-server-0
+   >7a6f245fdd9c   ghcr.io/k3d-io/k3d-proxy:5.9.0   "/bin/sh -c nginx-pr…"   31 minutes ago   Up 30 minutes   0.0.0.0:8081->80/tcp, [::]:8081->80/tcp, 0.0.0.0:33251->6443/tcp   k3d-lab-serverlb
+   >f71c5080e240   rancher/k3s:v1.35.5-k3s1         "/bin/k3d-entrypoint…"   31 minutes ago   Up 30 minutes                                                                      k3d-lab-agent-1
+   >a1da78d67c7b   rancher/k3s:v1.35.5-k3s1         "/bin/k3d-entrypoint…"   31 minutes ago   Up 30 minutes                                                                      k3d-lab-agent-0
+   >f41a894896a6   rancher/k3s:v1.35.5-k3s1         "/bin/k3d-entrypoint…"   31 minutes ago   Up 31 minutes                                                                      k3d-lab-server-0
    >Un noeud k3d est un container Docker.
 
 ## Exercice 2 — Premier déploiement
@@ -54,16 +54,21 @@ site-7676b744b7-jjk85   1/1     Running   0          3m12s   10.42.0.9   k3d-lab
 site-7676b744b7-zdpgd   1/1     Running   0          97s     10.42.1.7   k3d-lab-server-0   <none>           <none>`
 
 10. Avec l'image `nginx:9.99`, quel statut avait le pod ? Quelle commande vous a donné la cause ?
-    >
+    > State:          Waiting
+      Reason:       ErrImagePull
 11. Pendant la panne, le site restait-il accessible ? Pourquoi ?
-    >
+    >Dans mon environnement de TP (via le tunnel port-forward) : le site était devenu inaccessible dans le navigateur parce que mon tunnel port-forward précédent s'était coupé lors de la mise à jour précédente (suppression de l'ancien pod auquel il était attaché).
+    >Côté cluster Kubernetes (observé avec kubectl get pods et kubectl get endpoints site) : le service lui-même restait bien opérationnel, car lors du Rolling Update, Kubernetes garde les 3 anciens pods actifs tant que le nouveau pod (nginx:9.99) n'est pas passé à l'état Ready.
+    >Si l'on relance le port-forward (ou via un Ingress en production) pendant la panne, le site répond normalement sans interruption de service. 
 
 ## Exercice 6 — Portainer & Mario
 
 12. URL publique de votre Mario :
-    >
+    >https://symmetrical-halibut-4g5w575gjr73j47-8585.app.github.dev/
 13. Retrouvez le Deployment `mario` en ligne de commande. Portainer et `kubectl` parlent-ils au même composant ? Lequel ?
-    >
+    >Commande pour retrouver le Deployment : kubectl get deploy mario (ou kubectl get deploy mario -o yaml pour voir son manifeste complet).
+    >Oui, Portainer et kubectl communiquent exactement avec le même composant central du cluster : l'API Server de Kubernetes (hébergé sur le nœud control plane k3d-lab-server-0).
+    >CQue l'on crée, modifie ou supprime une ressource depuis la ligne de commande (kubectl) ou depuis l'interface graphique (Portainer), les deux ne sont que des clients qui interrogent la même API REST et manipulent les mêmes objets stockés dans le cluster. 
 
 ## Bonus (facultatif)
 
